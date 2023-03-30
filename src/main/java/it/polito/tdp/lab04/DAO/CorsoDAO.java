@@ -18,32 +18,25 @@ public class CorsoDAO {
 	public List<Corso> getTuttiICorsi() {
 
 		final String sql = "SELECT * FROM corso";
-
 		List<Corso> corsi = new LinkedList<Corso>();
 
 		try {
 			Connection conn = ConnectDB.getConnection();
 			PreparedStatement st = conn.prepareStatement(sql);
-
 			ResultSet rs = st.executeQuery();
 
 			while (rs.next()) {
-
 				String codins = rs.getString("codins");
 				int numeroCrediti = rs.getInt("crediti");
 				String nome = rs.getString("nome");
 				int periodoDidattico = rs.getInt("pd");
-
-				System.out.println(codins + " " + numeroCrediti + " " + nome + " " + periodoDidattico);
-
-				// Crea un nuovo JAVA Bean Corso
-				// Aggiungi il nuovo oggetto Corso alla lista corsi
+				//System.out.println(codins + " " + numeroCrediti + " " + nome + " " + periodoDidattico);
+				corsi.add(new Corso(codins, numeroCrediti, nome, periodoDidattico));
 			}
-
+			rs.close();
+			st.close();
 			conn.close();
-			
 			return corsi;
-			
 
 		} catch (SQLException e) {
 			// e.printStackTrace();
@@ -55,15 +48,42 @@ public class CorsoDAO {
 	/*
 	 * Dato un codice insegnamento, ottengo il corso
 	 */
-	public void getCorso(Corso corso) {
-		// TODO
+	public List<Corso> getCorso(Corso corso) {
+		return null;
 	}
 
 	/*
 	 * Ottengo tutti gli studenti iscritti al Corso
 	 */
-	public void getStudentiIscrittiAlCorso(Corso corso) {
-		// TODO
+	public List<Integer> getStudentiIscrittiAlCorso(Corso corso) {
+		
+		final String sql = "SELECT i.matricola "
+				+ "FROM iscrizione i, corso c "
+				+ "WHERE i.codins = c.codins AND c.codins = ?";
+		
+		List<Integer> studenti = new LinkedList<>();
+
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, corso.getCodins());
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				int matricola = rs.getInt("matricola");
+				
+				studenti.add(matricola);
+				}
+
+			rs.close();
+			st.close();
+			conn.close();
+			return studenti;
+
+		} catch (SQLException e) {
+			// e.printStackTrace();
+			throw new RuntimeException("Errore Db", e);
+		}
 	}
 
 	/*
