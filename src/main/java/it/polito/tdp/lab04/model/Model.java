@@ -34,4 +34,8 @@ public class Model {
 	public boolean cercaStudente(int matricola) {
 		return this.studenteDao.cercaStudente(matricola);
 	}
+	
+	public boolean inscriviStudenteACorso(Studente studente, Corso corso) {
+		return this.corsoDao.inscriviStudenteACorso(studente, corso);
+	}
 }

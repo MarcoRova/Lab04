@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import it.polito.tdp.lab04.model.Corso;
 import it.polito.tdp.lab04.model.Model;
+import it.polito.tdp.lab04.model.Studente;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -59,6 +60,8 @@ public class FXMLController {
     @FXML
     void doCercaCorsi(ActionEvent event) {
     	
+    	this.txtRisultato.clear();
+    	
     	try {
 	    	int matricola = Integer.parseInt(this.txtMatricola.getText());
 	    	
@@ -73,6 +76,11 @@ public class FXMLController {
 	    	
 		    	List<Corso> corsi = this.model.getCorsiFromStudente(matricola);
 		    	
+		    	if(corsi.size() ==0) {
+		    		this.txtRisultato.appendText("Studente non iscritto a nessun corso!");
+		    		return;
+		    	}
+		    	
 		    	for(Corso c:corsi) {
 		    		this.txtRisultato.appendText(c.toString()+"\n");
 		    	}
@@ -80,6 +88,11 @@ public class FXMLController {
 	    	else {
 	    		boolean iscritto = false;
 	    		List<Corso> corsi = this.model.getCorsiFromStudente(matricola);
+	    		
+	    		if(corsi.size() ==0) {
+		    		this.txtRisultato.appendText("Studente non iscritto a nessun corso!");
+		    		return;
+		    	}
 	    		
 	    		for(Corso c:corsi) {
 	    			if(c.getNome().compareTo(nomeIns)==0) {
@@ -102,6 +115,8 @@ public class FXMLController {
     @FXML
     void doCercaIscritti(ActionEvent event) {
     	
+    	this.txtRisultato.clear();
+    	
     	String nomeIns = this.choiseCorso.getValue();
     	
     	if(nomeIns == "" || nomeIns == null) {
@@ -120,6 +135,11 @@ public class FXMLController {
     	}
     	
     	List<Integer> matricole = this.model.getStudentiIscrittiAlCorso(cTemp);
+    	
+    	if(matricole.size() ==0) {
+    		this.txtRisultato.appendText("Non sono presenti iscritti al corso "+nomeIns);
+    		return;
+    	}
     	this.txtRisultato.appendText("Elenco iscritti al corso "+nomeIns+" ("+cTemp.getCodins()+"):\n\n");
     	
     	for(Integer i:matricole) {
@@ -131,6 +151,8 @@ public class FXMLController {
 
     @FXML
     void doCompleta(ActionEvent event) {
+    	
+    	this.txtRisultato.clear();
     	
     	try {
     	int matricola = Integer.parseInt(txtMatricola.getText());
@@ -158,8 +180,71 @@ public class FXMLController {
     	this.txtNome.clear();
     	this.txtCognome.clear();
     	this.txtRisultato.clear();
+    	this.choiseCorso.setValue(null);
     }
 
+    @FXML
+    void doIscrivi(ActionEvent event) {
+
+    	this.txtRisultato.clear();
+    	
+    	try {
+    		
+    		if(this.txtMatricola.getText().isEmpty()) {
+    			txtRisultato.setText("Inserire una matricola!");
+    			return;
+    		}
+    		
+    		
+    		int matricola = Integer.parseInt(txtMatricola.getText());
+    		if(this.model.cercaStudente(matricola) == false) {
+        		txtRisultato.setText("Matricola non presente nel database!");
+        		return;
+        	}
+    		
+    		String [] info = this.model.getInfoStudente(matricola);
+    		
+    		Studente s = new Studente(matricola, info[0], info[1], null);
+    		
+    		String nomeIns = this.choiseCorso.getValue();
+    		
+    		if(nomeIns == "" || nomeIns == null) {
+        		this.txtRisultato.setText("Selezionare un corso dal menù!");
+        		return;
+        	}
+    		
+    		Corso cTemp = null;
+        	
+        	for(Corso c:model.getTuttiICorsi()) {
+        		if(c.getNome().compareTo(nomeIns)==0)
+        			cTemp = c;
+        	}
+        	
+        	List<Integer> studIscritti = this.model.getStudentiIscrittiAlCorso(cTemp);
+        	
+        	for(Integer i:studIscritti) {
+        		if(i==matricola) {
+        			this.txtRisultato.setText("Studente già iscritto al corso "+nomeIns);
+        			return;
+        		}
+        	}
+        	
+        	if(this.model.inscriviStudenteACorso(s, cTemp)) {
+        		this.txtRisultato.setText("Studente "+matricola+" inscritto correttamente al corso "+nomeIns);
+        	}
+        	else {
+        		this.txtRisultato.setText("Studente "+matricola+" NON inscritto correttamente al corso "+nomeIns);
+        	}
+    	} catch (NumberFormatException e) {
+			txtRisultato.setText("Inserire una matricola nel formato corretto.");
+		} catch (RuntimeException e) {
+			txtRisultato.setText("ERRORE DI CONNESSIONE AL DATABASE!");
+		}
+    	
+    	
+    	
+    }
+    
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         assert btnCercaCorsi != null : "fx:id=\"btnCercaCorsi\" was not injected: check your FXML file 'Scene.fxml'.";
@@ -169,7 +254,6 @@ public class FXMLController {
         assert btnReset != null : "fx:id=\"btnReset\" was not injected: check your FXML file 'Scene.fxml'.";
         assert choiseCorso != null : "fx:id=\"choiceCorso\" was not injected: check your FXML file 'Scene.fxml'.";
         assert txtRisultato != null : "fx:id=\"txtRisultato\" was not injected: check your FXML file 'Scene.fxml'.";
-        
         }
     
     public void setModel(Model model) {

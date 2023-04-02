@@ -15,21 +15,25 @@ public class EntryPoint extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        
+    	FXMLController controller;
     	
     	FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Scene.fxml"));
-    	Parent root = loader.load();
+        Parent root = loader.load();
         Scene scene = new Scene(root);
-        
-        Model model = new Model();
-        FXMLController controller = loader.getController();
+
+        controller = loader.getController();
+    	
+        /*
+		 * Create and set the model here!
+		 */
+		Model model = new Model();
         controller.setModel(model);
         
-        scene.getRoot().setStyle("-fx-font-family: 'Verdana'");
-
-        stage.setTitle("Gestore Corsi");
+        scene.getStylesheets().add("/styles/Styles.css");
+        stage.setTitle("JavaFX and Maven");
         stage.setScene(scene);
         stage.show();
-        
     }
 
     /**
